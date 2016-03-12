@@ -1,0 +1,9 @@
+<%= form_for @charger, :url => update_charger_path(:id => @charger.id) do |c| %>
+	<%= c.label :price %>
+	<%= c.text_field :price %>
+	<%= c.label :location %>
+	<%= c.text_area :location %>
+	<%= c.label :phone %>
+	<%= c.text_field :phone %>
+	<%= c.submit %>
+<% end %>

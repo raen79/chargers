@@ -1,0 +1,9 @@
+<% @chargers.each do |c| %>
+	<p> <%= c.price%> </p>
+	<p> <%= c.location %> </p>
+	<p> <%= c.phone %> </p>
+	<%= link_to 'View Charger', charger_path(:id => c.id) %>
+	<br><br>
+<% end %>
+
+<%= link_to 'New Charger', :new_charger %>

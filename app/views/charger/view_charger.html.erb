@@ -1,0 +1,7 @@
+<p> <%= @charger.price%> </p>
+<p> <%= @charger.location %> </p>
+<p> <%= @charger.phone %> </p>
+
+<%= link_to 'My chargers', :my_chargers %>
+<%= link_to 'Edit charger', :edit_charger %>
+<%= button_to 'Delete Charger', :delete_charger, :method => :delete %>

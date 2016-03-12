@@ -1,7 +1,18 @@
 Rails.application.routes.draw do
 
-  devise_for :users
+  devise_for :users, :controllers => { :registrations => 'registrations' }
+
   root 'charger#home'
+  get '/charger/login_signup' => 'charger#login_signup', as: :login_signup
+  get '/charger/all_chargers' => 'charger#all_chargers'
+  get '/charger/my_chargers' => 'charger#my_chargers', as: :my_chargers
+  get '/charger/new_charger' => 'charger#new_charger', as: :new_charger
+  post '/charger' => 'charger#create_charger', as: :chargers
+  get '/charger/:id' => 'charger#view_charger', as: :charger
+  get '/charger/:id/edit' => 'charger#edit_charger', as: :edit_charger
+  patch 'charger/:id' => 'charger#update_charger', as: :update_charger
+  delete 'charger/:id' => 'charger#delete_charger', as: :delete_charger
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

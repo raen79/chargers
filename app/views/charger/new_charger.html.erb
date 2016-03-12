@@ -1,0 +1,9 @@
+<%= form_for @charger do |c| %>
+	<p> <%= c.label :price %> </p>
+	<p> <%= c.text_field :price %> </p>
+	<p> <%= c.label :location %> </p>
+	<p> <%= c.text_area :location %> </p>
+	<p> <%= c.label :phone %> </p>
+	<p> <%= c.text_field :phone %> </p>
+	<%= c.submit "Create" %>
+<% end %>

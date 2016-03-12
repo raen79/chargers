@@ -10,4 +10,64 @@ class ChargerController < ApplicationController
     #end
     @commercial_chargers = CommercialCharger.all
   end
+
+  def all_chargers
+  	@chargers = Charger.all.order(created_at: :desc)
+  end
+
+  def my_chargers
+  	@chargers = current_user.chargers.all.order(created_at: :desc)
+  end
+
+  def new_charger
+  	@charger = current_user.chargers.new
+  end
+
+  def create_charger
+  	@charger = current_user.chargers.new(charger_params)
+  	if @charger.save
+  		redirect_to :my_chargers
+  	else
+  		render 'new_charger'
+  	end
+  end
+
+  def view_charger
+  	@charger = current_user.chargers.find(params[:id])
+  end
+
+  def edit_charger
+  	@charger = current_user.chargers.find(params[:id])
+  end
+
+  def update_charger
+  	@charger = Charger.find(params[:id])
+  	if @charger.update(charger_params)
+  		redirect_to :charger
+  	else
+  		render 'view_charger'
+  	end
+  end
+
+  def delete_charger
+  	@charger = Charger.find(params[:id])
+  	if @charger.destroy
+  		redirect_to :my_chargers
+  	else
+  		render 'view_charger'
+  	end
+  end
+
+
+  def login_signup
+  	if user_signed_in?
+  		redirect_to :root
+  	end
+  end
+
+  private
+
+		def charger_params
+			params.require(:charger).permit(:price, :location, :phone)
+		end
 end
