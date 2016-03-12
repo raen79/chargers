@@ -7,3 +7,13 @@ html, body {
 #map {
 	height: 500px;
 }
+
+#description li{
+	display: inline;
+	list-style-type: none;
+}
+
+#description li:after{
+	content: '\A';
+	white-space: pre;
+}

@@ -1,19 +1,67 @@
+ <input id="address" type="textbox">
+ <input id="submit" type="button" value="Find">
+
 <div id="map"></div>
+<div id="description"></div>
 
 <script>
-function initMap() {
-	var map = new google.maps.Map(document.getElementById('map'), {
-	    center: {lat: -34.397, lng: 150.644},
-	    scrollwheel: false,
-	    zoom: 8
-	});
-	if (navigator.geolocation) {
-	     navigator.geolocation.getCurrentPosition(function (position) {
-	        	initialLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-	        	map.setCenter(initialLocation);
-	     });
-	}
-}
-</script>
+	function initMap() {
+		var map = new google.maps.Map(document.getElementById('map'), {
+		    center: {lat: 51.503208529694, lng: -0.243638766131662},
+		    scrollwheel: false,
+		    zoom: 8
+		});
 
+		if (navigator.geolocation) {
+		    navigator.geolocation.getCurrentPosition(function (position) {
+		        initialLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+		        map.setCenter(initialLocation);
+		    });
+		}
+
+		var geocoder = new google.maps.Geocoder();
+
+		document.getElementById('submit').addEventListener('click', function() {
+			geocodeAddress(geocoder, map);
+		});
+
+    	marker = [];
+    	i = 0;
+    	<% @commercial_chargers.each do |charger| %>
+			marker[i] = new google.maps.Marker({
+				position: {lat: parseFloat('<%= charger.coordinates %>'.split(",")[1]), lng: parseFloat('<%= charger.coordinates %>'.split(",")[0])},
+				map: map,
+				title: "<%= charger.name %>"
+			});
+			<% description = raw(charger.description.squish.gsub("'", "\\\'").gsub('"', '\\\"')) %>
+			marker[i].addListener('click', function() {
+			    $('#description').html($("<%= description %>").filter('ul:eq(0)').html());
+			});
+			i++;       		
+    	<% end %>
+	}
+
+	location_marker = null;
+
+	function geocodeAddress(geocoder, resultsMap) {
+	  if (location_marker != null){
+      	location_marker.setMap(null);
+      }
+	  var address = document.getElementById('address').value;
+	  geocoder.geocode({'address': address}, function(results, status) {
+	    if (status === google.maps.GeocoderStatus.OK) {
+	      resultsMap.setZoom(13);
+	      resultsMap.setCenter(results[0].geometry.location);
+	      location_marker = new google.maps.Marker({
+	        map: resultsMap,
+	        position: results[0].geometry.location,
+	        icon: "http://www.googlemapsmarkers.com/v1/0099FF/"
+	      });
+
+	    } else {
+	      alert('Geocode was not successful for the following reason: ' + status);
+	    }
+	  });
+	}
+</script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM&callback=initMap" async defer></script>
