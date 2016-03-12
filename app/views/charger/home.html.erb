@@ -25,6 +25,12 @@
 			geocodeAddress(geocoder, map);
 		});
 
+	  	$('#address').keyup(function(e){
+	  		if (e.keyCode == 13){
+	  			geocodeAddress(geocoder, map);
+	  		}
+	  	});
+
     	marker = [];
     	i = 0;
     	<% @commercial_chargers.each do |charger| %>
