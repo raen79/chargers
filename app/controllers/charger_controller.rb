@@ -9,6 +9,7 @@ class ChargerController < ApplicationController
     #  new_charger.save
     #end
     @commercial_chargers = CommercialCharger.all
+    @chargers = Charger.all
   end
 
   def all_chargers
@@ -68,6 +69,6 @@ class ChargerController < ApplicationController
   private
 
 		def charger_params
-			params.require(:charger).permit(:price, :location, :phone)
+			params.require(:charger).permit(:price, :location, :phone, :charger_type)
 		end
 end

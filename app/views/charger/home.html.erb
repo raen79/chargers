@@ -3,6 +3,7 @@
 
 <div id="map"></div>
 <div id="description"></div>
+<div id="show_address"></div>
 
 <script>
 	function initMap() {
@@ -42,6 +43,41 @@
 			<% description = raw(charger.description.squish.gsub("'", "\\\'").gsub('"', '\\\"')) %>
 			marker[i].addListener('click', function() {
 			    $('#description').html($("<%= description %>").filter('ul:eq(0)').html());
+
+				$.ajax({
+				     url: "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + parseFloat('<%= charger.coordinates %>'.split(",")[1]) + "," + parseFloat('<%= charger.coordinates %>'.split(",")[0]) + "&key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM",
+				     type: "POST", //type:"GET"
+				     dataType: "JSON",
+				     success: function(data){
+				           $('#show_address').html("Address: " + data['results'][0]['formatted_address']);
+				     }
+				})
+			});
+			i++;       		
+    	<% end %>
+
+    	marker2 = [];
+    	i = 0;
+		<% @chargers.each do |charger| %>
+			marker2[i] = new google.maps.Marker({
+				position: {lat: parseFloat('<%= charger.location %>'.split(",")[0]), lng: parseFloat('<%= charger.location %>'.split(",")[1])},
+				map: map,
+				title: "<%= charger.user.fname %> <%= charger.user.lname %> Charger",
+				icon: "http://www.googlemapsmarkers.com/v1/78AB46/"
+
+			});
+			<% description = raw(charger.charger_type.squish.gsub("'", "\\\'").gsub('"', '\\\"')) %>
+			marker2[i].addListener('click', function() {
+			    $('#description').html("<%= description %>" + '<br> Phone Number: <%= charger.user.phone %> <br> Price per Minute: £<%= charger.price %>');
+
+				$.ajax({
+				     url: "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + parseFloat('<%= charger.location %>'.split(",")[0]) + "," + parseFloat('<%= charger.location %>'.split(",")[1]) + "&key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM",
+				     type: "POST", //type:"GET"
+				     dataType: "JSON",
+				     success: function(data){
+				           $('#show_address').html("Address: " + data['results'][0]['formatted_address']);
+				     }
+				})
 			});
 			i++;       		
     	<% end %>
@@ -63,7 +99,6 @@
 	        position: results[0].geometry.location,
 	        icon: "http://www.googlemapsmarkers.com/v1/0099FF/"
 	      });
-
 	    } else {
 	      alert('Geocode was not successful for the following reason: ' + status);
 	    }

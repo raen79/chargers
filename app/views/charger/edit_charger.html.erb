@@ -1,9 +1,85 @@
 <%= form_for @charger, :url => update_charger_path(:id => @charger.id) do |c| %>
 	<%= c.label :price %>
 	<%= c.text_field :price %>
-	<%= c.label :location %>
-	<%= c.text_area :location %>
 	<%= c.label :phone %>
-	<%= c.text_field :phone %>
+	<%= c.text_field :phone %><br>
+	<p> <%= c.label "Charger Type" %> </p>
+	<p> <%= c.text_field :charger_type %> </p>
+	<%= c.label :location %>
+	<p><input id="address" type="textbox"><input id="search" type="button" value="Find"></p>
+	<div id="map"></div>
+	<%= c.hidden_field :location, :id => :location_field %>
 	<%= c.submit %>
 <% end %>
+
+<script>
+	location_marker = null;
+	function initMap() {
+		var map = new google.maps.Map(document.getElementById('map'), {
+		    center: {lat: 51.503208529694, lng: -0.243638766131662},
+		    scrollwheel: false,
+		    zoom: 8
+		});
+
+		if (navigator.geolocation) {
+		    navigator.geolocation.getCurrentPosition(function (position) {
+		        initialLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+		        map.setCenter(initialLocation);
+		    });
+		}
+
+		window.geocoder = new google.maps.Geocoder();
+
+		$.ajax({
+			    url: "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + parseFloat('<%= @charger.location %>'.split(",")[0]) + "," + parseFloat('<%= @charger.location %>'.split(",")[1]) + "&key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM",
+			     type: "POST", //type:"GET"
+			     dataType: "JSON",
+			     success: function(data){
+			           $('#address').val(data['results'][0]['formatted_address']);
+			           geocodeAddress(geocoder, map);
+			     }
+			})
+
+		document.getElementById('search').addEventListener('click', function() {
+			geocodeAddress(geocoder, map);
+		});
+
+	  	$('#address').keyup(function(e){
+	  		if (e.keyCode == 13){
+	  			geocodeAddress(geocoder, map);
+	  		}
+	  	});
+
+	}
+
+	function geocodeAddress(geocoder, resultsMap) {
+	  if (location_marker != null){
+      	location_marker.setMap(null);
+      }
+	  var address = document.getElementById('address').value;
+	  geocoder.geocode({'address': address}, function(results, status) {
+	    if (status === google.maps.GeocoderStatus.OK) {
+	      resultsMap.setZoom(13);
+	      resultsMap.setCenter(results[0].geometry.location);
+	      location_marker = new google.maps.Marker({
+	        map: resultsMap,
+	        position: results[0].geometry.location,
+	        icon: "http://www.googlemapsmarkers.com/v1/0099FF/",
+	      });
+	      $('#location_field').val(String(results[0].geometry.location).replace(/\(|\)/g, ''));
+	    } else {
+	      $('#location_field').val("91,91");
+	      alert('Geocode was not successful for the following reason: ' + status);
+	    }
+	  });
+	}
+	$(document).ready(function(){
+		$(window).keypress(function(e){
+			if(e.keyCode == 13){
+				event.preventDefault();
+			}
+		});
+	});
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM&callback=initMap" async defer></script>
