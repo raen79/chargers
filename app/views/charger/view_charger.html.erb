@@ -1,16 +1,19 @@
+<% title "Chargers - View Charger" %>
 <p> <%= @charger.price%> </p>
 <p> <%= @charger.location %> </p>
 <p> <%= @charger.phone %> </p>
 <p> Ups: <%= @positive %> </p>
 <p> Downs: <%= @negative %> </p>
-<%= link_to 'My chargers', :my_chargers %>
-<%= link_to 'Edit charger', :edit_charger %>
+
+<% if @my_charger_id == @my_id %>
+	<%= link_to 'Edit charger', :edit_charger %>
+	<%= button_to 'Delete Charger', :delete_charger, :method => :delete %>
+<% end %>
 <%= link_to 'Thumbs Up!', :thumbs_up %>
 <%= link_to 'Thumbs Down!', :thumbs_down %>
 <% if @exists==false %>
 	<%= link_to 'Your opinion', :new_comment %>
 <% end %>
-<%= button_to 'Delete Charger', :delete_charger, :method => :delete %>
 
 
 <b>Comments:</b>
@@ -23,7 +26,7 @@
 	<% end %>
 <% end %>
 
-<% if @exists==false %>
+<% if @exists==false && user_signed_in? %>
 	<%= form_for @comment, {:url => :comments, :method => :post} do |c| %>
 		
 		<p> <%= c.label "Your review!" %> </p>
@@ -32,3 +35,6 @@
 		<br>
 	<% end %>
 <% end %>
+
+<%= link_to 'My chargers', :my_chargers %>
+<%= link_to 'All chargers', :all_chargers %>

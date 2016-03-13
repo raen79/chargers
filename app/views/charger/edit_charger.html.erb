@@ -1,3 +1,4 @@
+<% title "Chargers - Edit charger" %>
 <%= form_for @charger, :url => update_charger_path(:id => @charger.id) do |c| %>
 	<%= c.label :price %>
 	<%= c.text_field :price %>

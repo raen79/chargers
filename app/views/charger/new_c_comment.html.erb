@@ -1,5 +1,5 @@
 <% title "Chargers - Review a charger" %>
-<%= form_for @comment, :url => :comments do |c| %>
+<%= form_for @comment, :url => c_comments_path do |c| %>
 	<p> <%= c.label "Your review!" %> </p>
 	<p> <%= c.text_area :review %> </p>
 	<%= c.submit "Done" %>

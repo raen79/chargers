@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160312233016) do
+ActiveRecord::Schema.define(version: 20160313131028) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -37,15 +37,17 @@ ActiveRecord::Schema.define(version: 20160312233016) do
   end
 
   create_table "raitings", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",            null: false
+    t.datetime "updated_at",            null: false
     t.boolean  "ok"
     t.text     "review"
     t.integer  "user_id"
     t.integer  "charger_id"
+    t.integer  "commercial_charger_id"
   end
 
   add_index "raitings", ["charger_id"], name: "index_raitings_on_charger_id", using: :btree
+  add_index "raitings", ["commercial_charger_id"], name: "index_raitings_on_commercial_charger_id", using: :btree
   add_index "raitings", ["user_id"], name: "index_raitings_on_user_id", using: :btree
 
   create_table "users", force: :cascade do |t|
@@ -71,5 +73,6 @@ ActiveRecord::Schema.define(version: 20160312233016) do
 
   add_foreign_key "chargers", "users"
   add_foreign_key "raitings", "chargers"
+  add_foreign_key "raitings", "commercial_chargers"
   add_foreign_key "raitings", "users"
 end

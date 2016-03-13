@@ -1,10 +1,7 @@
-<!-- SIGN UP !-->
-<%= csrf_meta_tags %>
 <h2>Sign up</h2>
 
 <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
   <%= devise_error_messages! %>
-
 
   <div class="field">
     <%= f.label :email %><br />
@@ -44,4 +41,4 @@
   </div>
 <% end %>
 
-<%= render "users/shared/links" %>
+<%= render "devise/shared/links" %>

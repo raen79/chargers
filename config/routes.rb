@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   root 'charger#home'
   get '/charger/login_signup' => 'charger#login_signup', as: :login_signup
-  get '/charger/all_chargers' => 'charger#all_chargers'
+  get '/charger/all_chargers' => 'charger#all_chargers', as: :all_chargers
   get '/charger/my_chargers' => 'charger#my_chargers', as: :my_chargers
   get '/charger/new_charger' => 'charger#new_charger', as: :new_charger
   post '/charger' => 'charger#create_charger', as: :chargers
@@ -13,10 +13,18 @@ Rails.application.routes.draw do
   patch 'charger/:id' => 'charger#update_charger', as: :update_charger
   delete 'charger/:id' => 'charger#delete_charger', as: :delete_charger
 
+  get '/ccharger/all_commercial_chargers' => 'charger#all_commercial_chargers', as: :all_commercial_chargers
+  get '/ccharger/view_commercial_charger/:id' => 'charger#view_commercial_charger', as: :commercial_charger
+  get '/ccharger/:id/new_c_comment' => 'charger#new_c_comment', as: :new_c_comment
+  post '/ccharger/:id' => 'charger#create_c_comment', as: :c_comments
+  get '/ccharger/:id/thumbs_c_up' => 'charger#thumbs_c_up', as: :thumbs_c_up
+  get '/ccharger/:id/thumbs_c_down' => 'charger#thumbs_c_down', as: :thumbs_c_down
+
   get '/charger/:id/thumbs_up' => 'charger#thumbs_up', as: :thumbs_up
   get '/charger/:id/thumbs_down' => 'charger#thumbs_down', as: :thumbs_down
   get '/charger/:id/new_comment' => 'charger#new_comment', as: :new_comment
   post '/charger/:id' => 'charger#create_comment', as: :comments
+
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

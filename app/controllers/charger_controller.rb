@@ -12,15 +12,23 @@ class ChargerController < ApplicationController
     @chargers = Charger.all
   end
 
+  #ALL ABOUT CHARGERS
+
   def all_chargers
   	@chargers = Charger.all.order(created_at: :desc)
   end
 
   def my_chargers
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
   	@chargers = current_user.chargers.all.order(created_at: :desc)
   end
 
   def new_charger
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
   	@charger = current_user.chargers.new
   end
 
@@ -37,6 +45,11 @@ class ChargerController < ApplicationController
   	@charger = Charger.find(params[:id])
   	@comments = @charger.raitings.all
   	@comment = @charger.raitings.new
+  	@my_charger_id = -1
+  	if !Charger.where(:user_id => current_user.id, :id => @charger).empty?
+  		@my_charger_id = current_user.chargers.find(params[:id]).user_id
+  	end
+  	@my_id = current_user.id
 
   	@exists = false
   	if !@charger.raitings.where(:user_id => current_user.id)[0].blank? && !@charger.raitings.where(:user_id => current_user.id)[0].review.blank?
@@ -63,7 +76,13 @@ class ChargerController < ApplicationController
   end
 
   def edit_charger
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
   	@charger = current_user.chargers.find(params[:id])
+  	if !(@charger.user_id == current_user.id)
+  		redirect_to :my_chargers
+  	end
   end
 
   def update_charger
@@ -76,7 +95,13 @@ class ChargerController < ApplicationController
   end
 
   def delete_charger
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
   	@charger = Charger.find(params[:id])
+  	if !(@charger.user_id == current_user.id)
+  		redirect_to :my_chargers
+  	end
   	if @charger.destroy
   		redirect_to :my_chargers
   	else
@@ -84,7 +109,58 @@ class ChargerController < ApplicationController
   	end
   end
 
+  # ALL ABOUT COMMERCIAL CHARGERS
+  def all_commercial_chargers
+  	@chargers = CommercialCharger.all
+  end
 
+  def view_commercial_charger
+  	@charger = CommercialCharger.find(params[:id])
+  	@comments = @charger.raitings.all
+  	@comment = @charger.raitings.new
+
+  	@positive = 0
+  	@charger.raitings.each do |c|
+  		if !c.blank?
+  			if c.ok == true
+  				@positive += 1
+  			end
+  		end
+  	end
+
+  	@negative = 0
+  	@charger.raitings.each do |c|
+  		if !c.blank?
+  			if c.ok == false
+  				@negative += 1
+  			end
+  		end
+  	end
+  end
+
+  def new_c_comment
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
+  	@charger = CommercialCharger.find(params[:id])
+  	if !@charger.raitings.where(:user_id => current_user.id)[0].blank? && !@charger.raitings.where(:user_id => current_user.id)[0].review.blank?
+  		redirect_to :charger
+  	end
+  	@comment = @charger.raitings.new
+  end
+
+  def create_c_comment
+  	@charger = CommercialCharger.find(params[:id])
+  	@comment = @charger.raitings.new(comment_params)
+  	if @comment.save
+  		redirect_to :commercial_charger
+  	else
+  		render :new_c_comment
+  	end
+  end
+
+
+  # user can't log in/sign up if logged in
   def login_signup
   	if user_signed_in?
   		redirect_to :root
@@ -92,7 +168,11 @@ class ChargerController < ApplicationController
   end
 
   # THUMBS UP AND THUMBS DOWN
+
   def thumbs_up
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
   	@charger = Charger.find(params[:id])
   	if @charger.raitings.where(:user_id => current_user.id).empty?
   		@charger.raitings.create(:ok => true, :user_id => current_user.id)
@@ -104,6 +184,9 @@ class ChargerController < ApplicationController
   end
 
   def thumbs_down
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
   	@charger = Charger.find(params[:id])
   	if @charger.raitings.where(:user_id => current_user.id).empty?
   		@charger.raitings.create(:ok => false, :user_id => current_user.id)
@@ -114,7 +197,40 @@ class ChargerController < ApplicationController
 	end
   end
 
+  def thumbs_c_up
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
+  	@charger = CommercialCharger.find(params[:id])
+  	if @charger.raitings.where(:user_id => current_user.id).empty?
+  		@charger.raitings.create(:ok => true, :user_id => current_user.id)
+  		redirect_to :commercial_charger
+  	else
+  		@charger.raitings.where(:user_id => current_user.id)[0].update(:ok => true)
+	  	redirect_to :commercial_charger
+	end
+  end
+
+  def thumbs_c_down
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
+  	@charger = CommercialCharger.find(params[:id])
+  	if @charger.raitings.where(:user_id => current_user.id).empty?
+  		@charger.raitings.create(:ok => false, :user_id => current_user.id)
+  		redirect_to :new_c_comment
+  	else
+	  	@charger.raitings.where(:user_id => current_user.id)[0].update(:ok => false)
+	  	redirect_to :new_c_comment
+	end
+  end
+
+  #REVIEWS
+
   def new_comment
+  	if !user_signed_in?
+  		redirect_to :login_signup
+  	end
   	@charger = Charger.find(params[:id])
   	if !@charger.raitings.where(:user_id => current_user.id)[0].blank? && !@charger.raitings.where(:user_id => current_user.id)[0].review.blank?
   		redirect_to :charger
