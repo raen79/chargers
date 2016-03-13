@@ -1,0 +1,5 @@
+<%= form_for @comment, :url => :comments do |c| %>
+	<p> <%= c.label "Your review!" %> </p>
+	<p> <%= c.text_area :review %> </p>
+	<%= c.submit "Create" %>
+<% end %>

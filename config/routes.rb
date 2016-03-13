@@ -13,6 +13,11 @@ Rails.application.routes.draw do
   patch 'charger/:id' => 'charger#update_charger', as: :update_charger
   delete 'charger/:id' => 'charger#delete_charger', as: :delete_charger
 
+  get '/charger/:id/thumbs_up' => 'charger#thumbs_up', as: :thumbs_up
+  get '/charger/:id/thumbs_down' => 'charger#thumbs_down', as: :thumbs_down
+  get '/charger/:id/new_comment' => 'charger#new_comment', as: :new_comment
+  post '/charger/:id' => 'charger#create_comment', as: :comments
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
