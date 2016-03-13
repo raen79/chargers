@@ -25,6 +25,8 @@ Rails.application.routes.draw do
   get '/charger/:id/new_comment' => 'charger#new_comment', as: :new_comment
   post '/charger/:id' => 'charger#create_comment', as: :comments
 
+  get '/get_price/:lat/:lng' => 'charger#get_price', :constraints => { :lat => /[^\/]+/, :lng => /[^\/]+/}
+  get '/get_rating_points/:lat/:lng' => 'charger#get_rating_points', :constraints => { :lat => /[^\/]+/, :lng => /[^\/]+/}
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
