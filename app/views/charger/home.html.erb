@@ -2,8 +2,10 @@
  <input id="submit" type="button" value="Find">
 
 <div id="map"></div>
+Amount of charge left in your car (kWh): <input id="battery_left"> kWh/100 km: <input id="battery_consumption">
 <div id="description"></div>
 <div id="show_address"></div>
+<div id="best_matches"></div>
 
 <script>
 	function initMap() {
@@ -92,13 +94,163 @@
 	  var address = document.getElementById('address').value;
 	  geocoder.geocode({'address': address}, function(results, status) {
 	    if (status === google.maps.GeocoderStatus.OK) {
-	      resultsMap.setZoom(13);
-	      resultsMap.setCenter(results[0].geometry.location);
-	      location_marker = new google.maps.Marker({
-	        map: resultsMap,
-	        position: results[0].geometry.location,
-	        icon: "http://www.googlemapsmarkers.com/v1/0099FF/"
-	      });
+		      resultsMap.setZoom(13);
+		      resultsMap.setCenter(results[0].geometry.location);
+		      location_marker = new google.maps.Marker({
+		        map: resultsMap,
+		        position: results[0].geometry.location,
+		        icon: "http://www.googlemapsmarkers.com/v1/0099FF/"
+		      });
+
+		      //Markers within 15 kilometers
+		      marks_within_radius = [];
+		      marks2_within_radius = [];
+
+		      //Total Points
+		      total_points = [];
+		      total2_points = [];
+
+		      //Distance
+		      distance_from_search = [];
+		      distance2_from_search = [];
+
+		      //Price
+		      marker_price = [];
+
+		      $(marker).each(function(){
+		      	  if (15000 >= google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(this.position.lat(), this.position.lng()), results[0].geometry.location)){
+			      	//Markers within 15 kilometers
+			      	marks_within_radius.push(this);
+			      	window.points = 0;
+			      	//Find distances between markers and user chosen location and add points
+			      	var distance = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(this.position.lat(), this.position.lng()), results[0].geometry.location);
+			      	distance_from_search.push(distance);
+			      	points += 1 - (distance/15000);
+			      	//Public or Private Points
+			      	points += 3;
+			      	//Price is 0
+					//Battery consumption
+					if($('#battery_left').val() != '' && $('#battery_consumption').val != ''){
+						if (((($('#battery_consumption').val()/100)*(distance/1000))/$('#battery_left').val()) != 0){
+							points += (1-(($('#battery_consumption').val()/100)*(distance/1000))/$('#battery_left').val())*5;
+						}
+						else{
+							points = 0;
+						}
+					}      
+					total_points.push(points);
+
+		      	  }
+		      });
+		      $(marker2).each(function(){
+				  if (15000 >= google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(this.position.lat(), this.position.lng()), results[0].geometry.location)){
+			      	lat = this.position.lat();
+			      	lng = this.position.lng();
+			      	//Markers within 15 kilometers
+			      	marks2_within_radius.push(this);
+			      	points = 0;
+			      	//Find distances between markers and user chosen location and add points
+			      	distance = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(this.position.lat(), this.position.lng()), results[0].geometry.location);
+			      	distance2_from_search.push(distance);
+			      	points += 1 - (distance/15000);
+			      	//Public or Private Points
+			      	points += 1;
+			      	//Price Points
+					$.ajax({
+				  		 async: false,
+					     url: "get_price/"+lat+"/"+lng,
+					     type: "GET",
+					     success: function(data){
+					     	points += (100-parseFloat(data))/100
+					     	marker_price.push(parseFloat(data));
+					     }
+					});	
+					//Rating Points	
+					$.ajax({
+				  		 async: false,
+					     url: "get_rating_points/"+lat+"/"+lng,
+					     type: "GET",
+					     success: function(data){
+					     	points += parseFloat(data)
+					     }
+					});	
+					//Battery consumption
+					if($('#battery_left').val() != '' && $('#battery_consumption').val != ''){
+						if (((($('#battery_consumption').val()/100)*(distance/1000))/$('#battery_left').val()) != 0){
+							points += (1-(($('#battery_consumption').val()/100)*(distance/1000))/$('#battery_left').val())*5;
+						}
+						else{
+							points = 0;
+						}
+					}      	
+			      	total2_points.push(points);
+		      	  }		      	
+		      });
+
+ 				i = 0;
+ 				marks_and_points = [];
+ 				marks_and_points2 = [];
+		    	while(i != marks_within_radius.length){
+		    		marks_and_points.push([marks_within_radius[i], total_points[i], distance_from_search[i]]);
+		    		i++;
+		    	}
+		    	i = 0;
+		    	while (i != marks2_within_radius.length){
+		    		marks_and_points2.push([marks2_within_radius[i], total2_points[i], distance2_from_search[i], marker_price[i]]);
+		    		i++;
+		    	}
+
+
+				marks_and_points.sort(function(a, b, c) {
+				    return b[1]-a[1];
+				});
+
+
+				marks_and_points2.sort(function(a, b, c, d) {
+				    return b[1]-a[1];
+				});
+
+				marks_and_points = marks_and_points.slice(0,3);
+				marks_and_points2 = marks_and_points2.slice(0,3);
+
+		      //Display Markers
+		      $('#best_matches').html('');
+		      $(marks_and_points).each(function(){
+		      	if (this[1] != 0){
+				  window.mark_lat = this[0].position.lat();
+	      	  	  window.mark_lng = this[0].position.lng();
+	      	  	  window.mark_title = this[0].title;
+	      	  	  $('#best_matches').append(mark_title + ' (' + parseInt(this[2]/1000) + ' km)' + '&nbsp;&nbsp;&nbsp;');
+				  $.ajax({
+				  		 async: false,
+					     url: "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + mark_lat + "," + mark_lng + "&key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM",
+					     type: "POST", //type:"GET"
+					     dataType: "JSON",
+					     success: function(data){
+					        $('#best_matches').append('<a target="_blank" href="https://www.google.com/maps/dir/' + document.getElementById('address').value + '/' + data['results'][0]['formatted_address'] + '">Get Directions</a><br>' + data['results'][0]['formatted_address'] + '<br><br>');
+					     }
+					});
+		      	}
+		      });
+
+		      $(marks_and_points2).each(function(){
+		      	if (this[1] != 0){
+				  window.mark_lat = this[0].position.lat();
+	      	  	  window.mark_lng = this[0].position.lng();
+	      	  	  window.mark_title = this[0].title;
+	      	  	  $('#best_matches').append(mark_title + ' (' + parseFloat(this[2]/1000) + ' km, £' + this[3] + '/10mins)' + '&nbsp;&nbsp;&nbsp;');
+				  $.ajax({
+				  		 async: false,
+					     url: "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + mark_lat + "," + mark_lng + "&key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM",
+					     type: "POST", //type:"GET"
+					     dataType: "JSON",
+					     success: function(data){
+					        $('#best_matches').append('<a target="_blank" href="https://www.google.com/maps/dir/' + document.getElementById('address').value + '/' + data['results'][0]['formatted_address'] + '">Get Directions</a><br>' + data['results'][0]['formatted_address'] + '<br><br>');
+					     }
+					});
+		      	}
+		      });
+
 	    } else {
 	      alert('Geocode was not successful for the following reason: ' + status);
 	    }
@@ -106,7 +258,7 @@
 	}
 </script>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM&callback=initMap&libraries=geometry" async defer></script>
 
 <% if user_signed_in? %>
   <li>

@@ -1,13 +1,13 @@
 class ChargerController < ApplicationController
-  require 'net/http'
+  #require 'net/http'
 
   def home
-    xml_content = Net::HTTP.get(URI.parse('http://api.openchargemap.io/v2/poi/?output=kml&countrycode=SE&maxresults=500'))
-    chargers = Hash.from_xml(xml_content)
-    chargers['kml']['Document']['Placemark'].each do |charger|
-      new_charger = CommercialCharger.new(:name => charger['name'], :description => charger['description'], :coordinates => charger['Point']['coordinates'])
-      new_charger.save
-    end
+    #xml_content = Net::HTTP.get(URI.parse('http://api.openchargemap.io/v2/poi/?output=kml&countrycode=SE&maxresults=500'))
+    #chargers = Hash.from_xml(xml_content)
+    #chargers['kml']['Document']['Placemark'].each do |charger|
+    #  new_charger = CommercialCharger.new(:name => charger['name'], :description => charger['description'], :coordinates => charger['Point']['coordinates'])
+    #  new_charger.save
+    #end
     @commercial_chargers = CommercialCharger.all
     @chargers = Charger.all
   end
@@ -130,6 +130,25 @@ class ChargerController < ApplicationController
   	else
   		render :new_comment
   	end
+  end
+
+  def get_price
+    @price = Charger.where(:location => "#{params[:lat]}, #{params[:lng]}")[0].price
+    render :layout => false
+  end
+
+  def get_rating_points
+    if !Charger.where(:location => "#{params[:lat]}, #{params[:lng]}")[0].raitings.empty?
+      ratings_balance = Charger.where(:location => "#{params[:lat]}, #{params[:lng]}")[0].raitings.where(:ok => true).length - Charger.where(:location => "#{params[:lat]}, #{params[:lng]}")[0].raitings.where(:ok => false).length 
+      log10 = Math.log10(ratings_balance).ceil
+      if log10 == 0
+        log10 = 1
+      end
+      @rating_points = ratings_balance.to_f/(10**log10)
+    else
+      @rating_points = 0
+    end
+    render :layout => false
   end
 
   private
