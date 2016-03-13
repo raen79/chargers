@@ -1,4 +1,24 @@
 <% title "Chargers - View Charger" %>
+
+<table id='a' width="50%" align="center">
+	<tr>
+		<td><%= link_to 'Home', root_path %></td>
+		<td><%= link_to 'My chargers', :my_chargers %></td>
+		<td><%= link_to 'All Private chargers', :all_chargers %></td>
+		<td><%= link_to 'All Public chargers', :all_commercial_chargers %></td>
+		<td><%= link_to 'New Charger', :new_charger %></td>
+		<td><% if user_signed_in? %>
+				  <%= link_to('Logout', destroy_user_session_path, :method => :delete) %>        
+				<% else %>
+				  <%= link_to('Login', new_user_session_path)  %>  
+			<% end %> 
+		</td>
+
+	</tr>
+</table>
+<br>
+<br>
+
 <p> <%= @charger.name%> </p>
 <p> <%= @charger.description %> </p>
 <p> <%= @charger.coordinates %> </p>
