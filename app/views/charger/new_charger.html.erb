@@ -1,9 +1,75 @@
 <%= form_for @charger do |c| %>
 	<p> <%= c.label :price %> </p>
 	<p> <%= c.text_field :price %> </p>
-	<p> <%= c.label :location %> </p>
-	<p> <%= c.text_area :location %> </p>
 	<p> <%= c.label :phone %> </p>
 	<p> <%= c.text_field :phone %> </p>
+	<p> <%= c.label "Charger Type" %> </p>
+	<p> <%= c.text_field :charger_type %> </p>
+	<p> <%= c.label :location %> </p>
+	<p><input id="address" type="textbox"><input id="search" type="button" value="Find"></p>
+	<div id="map"></div>
+	<p> <%= c.hidden_field :location, :value => '91,91', :id => :location_field %> </p>
 	<%= c.submit "Create" %>
 <% end %>
+
+<script>
+	function initMap() {
+		var map = new google.maps.Map(document.getElementById('map'), {
+		    center: {lat: 51.503208529694, lng: -0.243638766131662},
+		    scrollwheel: false,
+		    zoom: 8
+		});
+
+		if (navigator.geolocation) {
+		    navigator.geolocation.getCurrentPosition(function (position) {
+		        initialLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+		        map.setCenter(initialLocation);
+		    });
+		}
+
+		var geocoder = new google.maps.Geocoder();
+
+		document.getElementById('search').addEventListener('click', function() {
+			geocodeAddress(geocoder, map);
+		});
+
+	  	$('#address').keyup(function(e){
+	  		if (e.keyCode == 13){
+	  			geocodeAddress(geocoder, map);
+	  		}
+	  	});
+	}
+
+	location_marker = null;
+
+	function geocodeAddress(geocoder, resultsMap) {
+	  if (location_marker != null){
+      	location_marker.setMap(null);
+      }
+	  var address = document.getElementById('address').value;
+	  geocoder.geocode({'address': address}, function(results, status) {
+	    if (status === google.maps.GeocoderStatus.OK) {
+	      resultsMap.setZoom(13);
+	      resultsMap.setCenter(results[0].geometry.location);
+	      location_marker = new google.maps.Marker({
+	        map: resultsMap,
+	        position: results[0].geometry.location,
+	        icon: "http://www.googlemapsmarkers.com/v1/0099FF/",
+	      });
+	      $('#location_field').val(String(results[0].geometry.location).replace(/\(|\)/g, ''));
+	    } else {
+	      $('#location_field').val("91,91");
+	      alert('Geocode was not successful for the following reason: ' + status);
+	    }
+	  });
+	}
+	$(document).ready(function(){
+		$(window).keypress(function(e){
+			if(e.keyCode == 13){
+				event.preventDefault();
+			}
+		});
+	});
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpbpXsW3WI2MVN-2gk4XFHrjIYIiQMAfM&callback=initMap" async defer></script>
