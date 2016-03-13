@@ -39,7 +39,7 @@ class ChargerController < ApplicationController
   	@comment = @charger.raitings.new
 
   	@exists = false
-  	if !@charger.raitings.where(:user_id => current_user.id)[0].review.blank?
+  	if !@charger.raitings.where(:user_id => current_user.id)[0].blank? && !@charger.raitings.where(:user_id => current_user.id)[0].review.blank?
   		@exists = true
   	end
 
@@ -116,7 +116,7 @@ class ChargerController < ApplicationController
 
   def new_comment
   	@charger = Charger.find(params[:id])
-  	if !@charger.raitings.where(:user_id => current_user.id)[0].review.blank?
+  	if !@charger.raitings.where(:user_id => current_user.id)[0].blank? && !@charger.raitings.where(:user_id => current_user.id)[0].review.blank?
   		redirect_to :charger
   	end
   	@comment = @charger.raitings.new
