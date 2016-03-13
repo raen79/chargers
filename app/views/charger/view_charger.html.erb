@@ -1,7 +1,34 @@
 <p> <%= @charger.price%> </p>
 <p> <%= @charger.location %> </p>
 <p> <%= @charger.phone %> </p>
-
+<p> Ups: <%= @positive %> </p>
+<p> Downs: <%= @negative %> </p>
 <%= link_to 'My chargers', :my_chargers %>
 <%= link_to 'Edit charger', :edit_charger %>
+<%= link_to 'Thumbs Up!', :thumbs_up %>
+<%= link_to 'Thumbs Down!', :thumbs_down %>
+<% if @exists==false %>
+	<%= link_to 'Your opinion', :new_comment %>
+<% end %>
 <%= button_to 'Delete Charger', :delete_charger, :method => :delete %>
+
+
+<b>Comments:</b>
+<% if @comments.empty? %>
+	<p> There is no review for this station yet. Be the first! </p>
+	
+<% else %>
+	<% @comments.each do |c| %>
+		<p> <%= c.review %> </p>
+	<% end %>
+<% end %>
+
+<% if @exists==false %>
+	<%= form_for @comment, {:url => :comments, :method => :post} do |c| %>
+		
+		<p> <%= c.label "Your review!" %> </p>
+		<p> <%= c.text_area :review %> </p>
+		<%= c.submit "Create" %>
+		<br>
+	<% end %>
+<% end %>

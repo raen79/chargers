@@ -34,7 +34,32 @@ class ChargerController < ApplicationController
   end
 
   def view_charger
-  	@charger = current_user.chargers.find(params[:id])
+  	@charger = Charger.find(params[:id])
+  	@comments = @charger.raitings.all
+  	@comment = @charger.raitings.new
+
+  	@exists = false
+  	if !@charger.raitings.where(:user_id => current_user.id)[0].review.blank?
+  		@exists = true
+  	end
+
+  	@positive = 0
+  	@charger.raitings.each do |c|
+  		if !c.blank?
+  			if c.ok == true
+  				@positive += 1
+  			end
+  		end
+  	end
+
+  	@negative = 0
+  	@charger.raitings.each do |c|
+  		if !c.blank?
+  			if c.ok == false
+  				@negative += 1
+  			end
+  		end
+  	end
   end
 
   def edit_charger
@@ -66,9 +91,54 @@ class ChargerController < ApplicationController
   	end
   end
 
+  # THUMBS UP AND THUMBS DOWN
+  def thumbs_up
+  	@charger = Charger.find(params[:id])
+  	if @charger.raitings.where(:user_id => current_user.id).empty?
+  		@charger.raitings.create(:ok => true, :user_id => current_user.id)
+  		redirect_to :charger
+  	else
+  		@charger.raitings.where(:user_id => current_user.id)[0].update(:ok => true)
+	  	redirect_to :charger
+	end
+  end
+
+  def thumbs_down
+  	@charger = Charger.find(params[:id])
+  	if @charger.raitings.where(:user_id => current_user.id).empty?
+  		@charger.raitings.create(:ok => false, :user_id => current_user.id)
+  		redirect_to :new_comment
+  	else
+	  	@charger.raitings.where(:user_id => current_user.id)[0].update(:ok => false)
+	  	redirect_to :new_comment
+	end
+  end
+
+  def new_comment
+  	@charger = Charger.find(params[:id])
+  	if !@charger.raitings.where(:user_id => current_user.id)[0].review.blank?
+  		redirect_to :charger
+  	end
+  	@comment = @charger.raitings.new
+  end
+
+  def create_comment
+  	@charger = Charger.find(params[:id])
+  	@comment = @charger.raitings.new(comment_params)
+  	if @comment.save
+  		redirect_to :charger
+  	else
+  		render :new_comment
+  	end
+  end
+
   private
 
 		def charger_params
 			params.require(:charger).permit(:price, :location, :phone, :charger_type)
+		end
+
+		def comment_params
+			params.require(:raiting).permit(:review, :id)
 		end
 end
